@@ -2,8 +2,7 @@
 
 > **AI-powered developer toolkit that understands your codebase so you don't have to.**
 
-OmniRepo AI is a full-stack hackathon project that supercharges developer workflows using Google Gemini. It includes a polished landing page, login/signup flow, profile/settings page, and a protected repo workspace with AI-powered docs, chat, PR summarization, and onboarding generation — all in a dark-mode experience.
-
+OmniRepo AI is a full-stack hackathon project that supercharges developer workflows using Google Gemini. It includes a polished landing page, login/signup flow, profile/settings page, and a protected repo workspace with AI-powered docs, chat, PR summarization, and onboarding generation — all in a dark-mode experience. Analyze both **local repositories** and **GitHub repositories** seamlessly.
 
 ---
 
@@ -11,7 +10,7 @@ OmniRepo AI is a full-stack hackathon project that supercharges developer workfl
 
 | Feature | Description |
 |---|---|
-| 🔍 **Repo Analysis** | Scan a local repository and get a structured breakdown of its file tree, tech stack, and key stats |
+| 🔍 **Repo Analysis** | Scan a local repository or GitHub URL and get a structured breakdown of its file tree, tech stack, and key stats |
 | 💬 **Repo Chat** | Ask natural-language questions about your codebase and get AI-powered answers |
 | 🔀 **PR Summarizer** | Paste a Git diff and receive a clear, concise summary of the pull request's changes |
 | 📄 **README Generator** | Auto-generate a professional `README.md` tailored to your project |
@@ -19,6 +18,7 @@ OmniRepo AI is a full-stack hackathon project that supercharges developer workfl
 | 🎓 **Onboarding Guide** | Generate a Day-1 developer guide covering setup, architecture, and first steps |
 | 👤 **Auth & Profile** | Demo login/signup and account profile pages with persistent browser storage |
 | 🏠 **Landing Pages** | Home and About pages that introduce the app and guide users to sign in |
+| 🌐 **GitHub Integration** | Analyze public GitHub repositories directly using repository URLs |
 
 ---
 
@@ -38,7 +38,8 @@ omnirepoai/
 │       ├── prSummarizer.js   # Pull-request diff summarizer
 │       ├── readmeGenerator.js     # README.md generator
 │       ├── apiDocGenerator.js     # API reference doc generator
-│       └── onboardingGenerator.js # Onboarding guide generator
+│       ├── onboardingGenerator.js # Onboarding guide generator
+│       └── githubCloner.js   # GitHub URL handler & repo cloner
 │
 └── frontend/                 # React + Vite SPA
     └── src/
@@ -71,6 +72,7 @@ omnirepoai/
 - **dotenv** — Environment variable management
 - **cors** — Cross-origin request support
 - **nodemon** — Hot-reload during development
+- **simple-git** — Git operations and GitHub repository cloning
 
 ### Frontend
 - **React 18** + **Vite 5** — Fast SPA development
@@ -87,6 +89,7 @@ omnirepoai/
 
 - **Node.js** v18 or later
 - A **Google Gemini API key** — get one free at [aistudio.google.com](https://aistudio.google.com)
+- **Git** (for GitHub repository cloning)
 
 ---
 
@@ -142,14 +145,50 @@ All routes are prefixed with `/api`.
 
 | Method | Endpoint | Body | Description |
 |--------|----------|------|-------------|
-| `POST` | `/api/analyze-repo` | `{ repoPath }` | Analyze a local repository |
-| `POST` | `/api/repo-chat` | `{ repoPath, question }` | Chat with your codebase |
-| `POST` | `/api/generate-docs` | `{ repoPath }` | Generate general documentation |
+| `POST` | `/api/analyze-repo` | `{ repoPath }` | Analyze a local repository or GitHub URL |
+| `POST` | `/api/repo-chat` | `{ repoPath, question }` | Chat with your codebase (local or GitHub) |
+| `POST` | `/api/generate-docs` | `{ repoPath }` | Generate documentation (local or GitHub) |
 | `POST` | `/api/deployment-changes` | `{ repoPath }` | Analyze deployment-related changes |
 | `POST` | `/api/summarize-pr` | `{ diffText }` | Summarize a PR diff |
-| `POST` | `/api/generate-readme` | `{ repoPath }` | Generate a README.md |
-| `POST` | `/api/generate-api-docs` | `{ repoPath }` | Generate API reference docs |
-| `POST` | `/api/generate-onboarding` | `{ repoPath }` | Generate an onboarding guide |
+| `POST` | `/api/generate-readme` | `{ repoPath }` | Generate a README.md (local or GitHub) |
+| `POST` | `/api/generate-api-docs` | `{ repoPath }` | Generate API reference docs (local or GitHub) |
+| `POST` | `/api/generate-onboarding` | `{ repoPath }` | Generate an onboarding guide (local or GitHub) |
+
+### Input Format Examples
+
+All endpoints that accept `repoPath` now support:
+
+**Local Paths:**
+```json
+{ "repoPath": "C:/Users/user/projects/my-app" }
+{ "repoPath": "/home/user/projects/my-app" }
+```
+
+**GitHub URLs (HTTPS):**
+```json
+{ "repoPath": "https://github.com/owner/repo" }
+{ "repoPath": "https://github.com/owner/repo.git" }
+```
+
+**GitHub URLs (SSH - auto-converted):**
+```json
+{ "repoPath": "git@github.com:owner/repo.git" }
+```
+
+---
+
+## 🔄 How GitHub Integration Works
+
+1. **URL Detection** — The backend automatically detects if the input is a GitHub URL
+2. **Automatic Cloning** — Public GitHub repositories are cloned to a temporary directory
+3. **Analysis** — The repository is analyzed just like a local repository
+4. **Cleanup** — Temporary files are automatically deleted after analysis
+
+**Supported GitHub URLs:**
+- ✅ `https://github.com/owner/repo`
+- ✅ `https://github.com/owner/repo.git`
+- ✅ `git@github.com:owner/repo.git`
+- ✅ `git@github.com:owner/repo`
 
 ---
 
@@ -157,6 +196,8 @@ All routes are prefixed with `/api`.
 
 - Sensitive environment variables are **automatically redacted** before any content is sent to the AI model.
 - Your Gemini API key is stored only in the backend `.env` file and is never exposed to the frontend.
+- GitHub repositories are cloned to temporary directories in your system's temp folder and automatically cleaned up.
+- Only **public** GitHub repositories can be analyzed (private repos require authentication configuration).
 - Make sure `.env` is listed in your `.gitignore` before pushing to a public repository.
 
 ---
@@ -169,6 +210,7 @@ The frontend features a **dark-mode, glassmorphism design** with:
 - A **responsive mobile hamburger menu**
 - A **live backend status indicator** in the header (polls every 30 seconds)
 - Animated gradient background blobs for a premium look and feel
+- **Unified input field** accepting both local paths and GitHub URLs
 
 ---
 
@@ -181,6 +223,31 @@ The frontend features a **dark-mode, glassmorphism design** with:
 | `frontend/` | `npm run dev` | Start Vite dev server |
 | `frontend/` | `npm run build` | Build production bundle |
 | `frontend/` | `npm run preview` | Preview production build locally |
+
+---
+
+## 📝 Usage Examples
+
+### Analyze a Local Repository
+```bash
+curl -X POST http://localhost:4000/api/analyze-repo \
+  -H "Content-Type: application/json" \
+  -d '{"repoPath": "/home/user/my-project"}'
+```
+
+### Analyze a GitHub Repository
+```bash
+curl -X POST http://localhost:4000/api/analyze-repo \
+  -H "Content-Type: application/json" \
+  -d '{"repoPath": "https://github.com/facebook/react"}'
+```
+
+### Generate Documentation for GitHub Repo
+```bash
+curl -X POST http://localhost:4000/api/generate-docs \
+  -H "Content-Type: application/json" \
+  -d '{"repoPath": "https://github.com/vercel/next.js"}'
+```
 
 ---
 

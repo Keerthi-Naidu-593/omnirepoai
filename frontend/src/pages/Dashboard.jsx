@@ -41,14 +41,14 @@ export default function Dashboard() {
           </div>
           
           <div className="space-y-2">
-            <label className="text-xs font-medium text-slate-400 uppercase tracking-wider">Repository Path</label>
+            <label className="text-xs font-medium text-slate-400 uppercase tracking-wider">Repository Path or GitHub URL</label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
               <input
                 className="w-full glass-input rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-slate-500"
                 value={repoPath}
                 onChange={(e) => setRepoPath(e.target.value)}
-                placeholder="e.g. C:\projects\my-app or /home/user/my-app"
+                placeholder="Enter local path or GitHub URL (e.g., https://github.com/user/repo or /home/user/my-app)"
               />
             </div>
           </div>

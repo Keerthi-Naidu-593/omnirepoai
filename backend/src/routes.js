@@ -7,13 +7,50 @@ import { summarizePR } from "./prSummarizer.js";
 import { generateReadme } from "./readmeGenerator.js";
 import { generateApiDocs } from "./apiDocGenerator.js";
 import { generateOnboarding } from "./onboardingGenerator.js";
+import { 
+  isGitHubUrl, 
+  cloneGitHubRepo, 
+  cleanupTempDir,
+  getRepoInfoFromUrl 
+} from "./githubCloner.js";
 
 const router = express.Router();
 
-router.post("/analyze-repo", (req, res) => {
+/**
+ * Helper: Processes both local paths and GitHub URLs
+ */
+async function processRepository(input, analysisCallback) {
+  let localPath = input;
+  let tempDir = null;
+
+  try {
+    // Check if input is GitHub URL
+    if (isGitHubUrl(input)) {
+      console.log(`GitHub URL detected: ${input}`);
+      tempDir = await cloneGitHubRepo(input);
+      localPath = tempDir;
+    }
+
+    // Run the analysis callback
+    const result = await analysisCallback(localPath);
+    
+    return result;
+  } finally {
+    // Cleanup temporary directory if it was created
+    if (tempDir) {
+      await cleanupTempDir(tempDir);
+    }
+  }
+}
+
+router.post("/analyze-repo", async (req, res) => {
   try {
     const { repoPath } = req.body;
-    const result = analyzeRepository(repoPath);
+    
+    const result = await processRepository(repoPath, (path) => {
+      return analyzeRepository(path);
+    });
+
     res.json(result);
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -23,8 +60,12 @@ router.post("/analyze-repo", (req, res) => {
 router.post("/repo-chat", async (req, res) => {
   try {
     const { repoPath, question } = req.body;
-    const answer = await chatWithRepo(repoPath, question);
-    res.json({ answer });
+    
+    const result = await processRepository(repoPath, (path) => {
+      return chatWithRepo(path, question);
+    });
+
+    res.json({ answer: result });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -33,8 +74,12 @@ router.post("/repo-chat", async (req, res) => {
 router.post("/generate-docs", async (req, res) => {
   try {
     const { repoPath } = req.body;
-    const docs = await generateDocumentation(repoPath);
-    res.json({ docs });
+    
+    const result = await processRepository(repoPath, (path) => {
+      return generateDocumentation(path);
+    });
+
+    res.json({ docs: result });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -43,7 +88,11 @@ router.post("/generate-docs", async (req, res) => {
 router.post("/deployment-changes", async (req, res) => {
   try {
     const { repoPath } = req.body;
-    const result = await analyzeDeploymentChanges(repoPath);
+    
+    const result = await processRepository(repoPath, (path) => {
+      return analyzeDeploymentChanges(path);
+    });
+
     res.json({ explanation: result.explanation });
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -60,13 +109,15 @@ router.post("/summarize-pr", async (req, res) => {
   }
 });
 
-// ── New Feature Routes ─────────────────────────────────────────────────────
-
 router.post("/generate-readme", async (req, res) => {
   try {
     const { repoPath } = req.body;
-    const readme = await generateReadme(repoPath);
-    res.json({ readme });
+    
+    const result = await processRepository(repoPath, (path) => {
+      return generateReadme(path);
+    });
+
+    res.json({ readme: result });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -75,8 +126,12 @@ router.post("/generate-readme", async (req, res) => {
 router.post("/generate-api-docs", async (req, res) => {
   try {
     const { repoPath } = req.body;
-    const apiDocs = await generateApiDocs(repoPath);
-    res.json({ apiDocs });
+    
+    const result = await processRepository(repoPath, (path) => {
+      return generateApiDocs(path);
+    });
+
+    res.json({ apiDocs: result });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -85,8 +140,12 @@ router.post("/generate-api-docs", async (req, res) => {
 router.post("/generate-onboarding", async (req, res) => {
   try {
     const { repoPath } = req.body;
-    const guide = await generateOnboarding(repoPath);
-    res.json({ guide });
+    
+    const result = await processRepository(repoPath, (path) => {
+      return generateOnboarding(path);
+    });
+
+    res.json({ guide: result });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
