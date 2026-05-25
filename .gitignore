@@ -1,0 +1,28 @@
+# dependencies
+node_modules/
+
+# env files (VERY IMPORTANT)
+.env
+.env.local
+.env.production
+
+# logs
+*.log
+
+# build outputs
+dist/
+build/
+frontend/dist/
+
+# OS files
+.DS_Store
+
+# Vite cache
+.vite/
+
+# coverage
+coverage/
+
+# IDE
+.vscode/
+.idea/
