@@ -29,6 +29,24 @@ export default function Login() {
     }
   };
 
+  const DEMO_EMAIL = "demo@demo.com";
+  const DEMO_PASSWORD = "demopass123";
+
+  const handleDemo = (event) => {
+    event.preventDefault();
+    setEmail(DEMO_EMAIL);
+    setPassword(DEMO_PASSWORD);
+    try {
+      setError("");
+      auth.demoLogin(DEMO_EMAIL, DEMO_PASSWORD);
+      setMessage("Signed in as demo. Redirecting...");
+      navigate("/app");
+    } catch (e) {
+      setMessage("");
+      setError(e.message || "Demo sign in failed.");
+    }
+  };
+
   return (
     <main className="min-h-screen pt-24 pb-16 px-4 sm:px-6 lg:px-8">
       <section className="mx-auto max-w-xl surface-panel p-8">
@@ -73,6 +91,10 @@ export default function Login() {
           <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-sky-500 to-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:-translate-y-0.5">
             Sign In
             <ArrowRight size={16} />
+          </button>
+
+          <button type="button" onClick={handleDemo} className="mt-3 flex w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-transparent px-6 py-3 text-sm font-semibold text-slate-200 hover:bg-white/5">
+            Use demo account (autofill)
           </button>
         </form>
 

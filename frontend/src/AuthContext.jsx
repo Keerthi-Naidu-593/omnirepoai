@@ -49,13 +49,29 @@ export function AuthProvider({ children }) {
     return found;
   }
 
+  // Create the account if needed and sign in (used for demo/autofill)
+  function demoLogin(email, password) {
+    try {
+      return login(email, password);
+    } catch (e) {
+      // If login failed because user doesn't exist or wrong password,
+      // attempt to create a demo user and sign in.
+      try {
+        return signup(email, password);
+      } catch (signupErr) {
+        // If signup fails (e.g., account exists with different case), try login once more
+        return login(email, password);
+      }
+    }
+  }
+
   function logout() {
     localStorage.removeItem("currentUser");
     setUser(null);
   }
 
   return (
-    <AuthContext.Provider value={{ user, signup, login, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, signup, login, demoLogin, logout, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   );
