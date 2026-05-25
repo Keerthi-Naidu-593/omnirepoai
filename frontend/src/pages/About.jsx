@@ -207,20 +207,7 @@ export default function About() {
             ))}
           </div>
 
-          {/* Current Limitations Notice */}
-          <div className="mt-12 surface-card rounded-2xl border border-amber-500/20 bg-gradient-to-r from-amber-500/5 to-orange-500/5 p-8">
-            <div className="flex gap-4">
-              <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-amber-500/20 text-amber-400 pt-0.5 mt-0.5">
-                <AlertCircle size={16} />
-              </div>
-              <div>
-                <h3 className="font-semibold text-amber-200 mb-2">Currently Available For</h3>
-                <p className="text-amber-100/80 text-sm leading-6">
-                  OmniRepo AI currently analyzes repositories from <strong>local file paths</strong> on your system. GitHub links and ZIP file uploads will be available soon as we expand platform support.
-                </p>
-              </div>
-            </div>
-          </div>
+          
         </section>
 
         {/* Use Cases Section */}
