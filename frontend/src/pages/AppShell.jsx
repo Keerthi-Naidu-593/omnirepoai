@@ -85,7 +85,7 @@ export default function AppShell() {
   useEffect(() => {
     async function checkBackend() {
       try {
-        const res = await fetch("http://localhost:4000/api/analyze-repo", {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE}/analyze-repo`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ repoPath: "." }),

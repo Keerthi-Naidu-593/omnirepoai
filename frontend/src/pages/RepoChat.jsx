@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { MessageSquare, Send, Search, Loader2, Sparkles, Bot } from "lucide-react";
 
-const API_BASE = "http://localhost:4000/api";
+const API_BASE = import.meta.env.VITE_API_BASE;
 
 export default function RepoChat() {
   const [repoPath, setRepoPath] = useState("");

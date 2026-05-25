@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { GitPullRequest, Search, Loader2, Sparkles, FileDiff, Zap } from "lucide-react";
 
-const API_BASE = "http://localhost:4000/api";
+const API_BASE = import.meta.env.VITE_API_BASE;
 
 export default function PRSummarizer() {
   const [diffText, setDiffText] = useState("");
